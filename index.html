@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>榴莲成本核算器 / เครื่องคำนวณต้นทุนทุเรียน</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#1B5E20;--primary-light:#4CAF50;--primary-lighter:#E8F5E9;--primary-lightest:#F1F8E9;
+  --accent:#FF6F00;--accent-light:#FFF3E0;--danger:#C62828;
+  --text:#212121;--text-light:#616161;--text-lighter:#9E9E9E;
+  --border:#C8E6C9;--bg:#F5F5F5;--white:#FFF;
+  --shadow:0 2px 8px rgba(0,0,0,0.08);--shadow-lg:0 4px 16px rgba(0,0,0,0.12);
+  --radius:10px;--radius-sm:6px;
+}
+body{font-family:'Microsoft YaHei','Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:20px;font-size:14px}
+
+/* Header */
+.header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);color:#fff;padding:28px 32px;border-radius:var(--radius);margin-bottom:24px;box-shadow:var(--shadow-lg)}
+.header h1{font-size:26px;font-weight:700;margin-bottom:4px}
+.header h1 span{font-size:15px;font-weight:400;opacity:.88;display:block;margin-top:2px}
+
+/* Card */
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px}
+.card-title{background:var(--primary-lighter);padding:14px 20px;font-size:16px;font-weight:700;color:var(--primary);border-bottom:2px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-body{padding:20px}
+
+/* Rate Bar */
+.rate-bar{display:flex;align-items:center;gap:16px;background:var(--accent-light);padding:16px 20px;border-radius:var(--radius);margin-bottom:20px;box-shadow:var(--shadow)}
+.rate-bar label{font-weight:700;color:var(--accent);white-space:nowrap;font-size:15px}
+.rate-bar input{width:140px;padding:10px 14px;border:2px solid var(--accent);border-radius:var(--radius-sm);font-size:20px;font-weight:700;text-align:center;outline:none;transition:.2s}
+.rate-bar input:focus{box-shadow:0 0 0 3px rgba(255,111,0,.25)}
+.rate-bar .rate-info{font-size:13px;color:var(--text-light);flex:1}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+
+/* Table */
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #E0E0E0;font-size:14px;white-space:nowrap}
+#gradeTable,#thFeeTable,#cnFeeTable{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+th{background:var(--primary-lighter);color:var(--primary);font-weight:700;position:sticky;top:0;z-index:1}
+th.sub{background:#F1F8E9;font-weight:600;font-size:12px}
+tr:hover{background:#FAFAFA}
+tr.summary{background:var(--primary-lighter);font-weight:700}
+tr.total-row{background:var(--primary);color:#fff;font-weight:700}
+tr.total-row td{border-bottom:none}
+
+/* Inputs in table */
+.t-input{width:80px;padding:6px 8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;text-align:center;outline:none;transition:.2s;background:#FAFFF5}
+.t-input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(27,94,32,.15)}
+.t-input.rate{width:140px;font-size:18px;font-weight:700}
+.t-input.price{width:100px;font-weight:600;color:var(--primary)}
+.t-input.name{width:180px;text-align:left}
+.t-input.qty{width:80px}
+.t-input.wt{width:80px}
+.t-input.fee{width:120px}
+
+/* Cost display */
+.cost-display{font-size:18px;font-weight:700;color:var(--danger);text-align:center;min-width:100px}
+
+/* Fee section */
+.fee-section{margin-bottom:16px}
+.fee-section-header{font-size:14px;font-weight:700;color:var(--primary);padding:8px 12px;background:#E8F5E9;border-radius:var(--radius-sm) var(--radius-sm) 0 0;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.fee-section-header .arrow{transition:.2s;font-size:12px}
+.fee-section-header.collapsed .arrow{transform:rotate(-90deg)}
+.fee-section-body{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);overflow:hidden;transition:max-height .3s}
+.fee-section-body.collapsed{max-height:0!important;overflow:hidden}
+
+/* Add row button */
+.btn{padding:8px 16px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:4px}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#2E7D32}
+.btn-danger{background:#FFEBEE;color:var(--danger)}.btn-danger:hover{background:#FFCDD2}
+.btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:#E65100}
+.btn-sm{padding:4px 10px;font-size:12px}
+
+/* Action bar */
+.action-bar{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;justify-content:center}
+.action-bar .btn{padding:12px 28px;font-size:15px;border-radius:var(--radius)}
+
+/* Print */
+@media print{
+  body{background:#fff;padding:0}
+  .card{box-shadow:none;border:1px solid #E0E0E0;break-inside:avoid}
+  .no-print{display:none!important}
+  .t-input{border:1px solid #ccc;background:#fff}
+  .cost-display{color:#000}
+}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeIn .3s ease}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>🍈 榴莲成本核算器<span>เครื่องคำนวณต้นทุนทุเรียน Durian Cost Calculator</span></h1>
+  <div style="font-size:13px;opacity:.85;margin-top:6px">
+    调整五大变量 · 自动计算各级别成本 / ปรับพารามิเตอร์หลัก 5 รายการ · คำนวณต้นทุนต่อหน่วยอัตโนมัติ
+  </div>
+</div>
+
+<!-- Exchange Rate Bar -->
+<div class="rate-bar">
+  <label>💱 汇率 / อัตราแลกเปลี่ยน</label>
+  <input type="number" id="exchangeRate" value="0" step="0.01" min="0.01" oninput="calc()">
+  <span style="font-size:13px;color:var(--text-light)">THB → CNY</span>
+  <div class="rate-info">所有泰铢费用按此汇率折算为人民币 / อัตราแลกเปลี่ยนสำหรับแปลงค่าธรรมเนียมทั้งหมดเป็นหยวน</div>
+</div>
+
+<!-- Main Grid -->
+<div class="grid-2">
+
+  <!-- LEFT: Grade Data -->
+  <div class="card">
+    <div class="card-title">📦 级别数据 / ข้อมูลตามระดับเกรด</div>
+    <div class="card-body" style="padding:12px">
+      <table id="gradeTable">
+        <thead>
+          <tr>
+            <th>级别 / เกรด</th>
+            <th>件数 / จำนวน</th>
+            <th>单件净重(KG)<br><span style="font-weight:400;font-size:11px">น้ำหนักสุทธิ/กล่อง</span></th>
+            <th>收果价(฿/KG)<br><span style="font-weight:400;font-size:11px">ราคารับผลไม้</span></th>
+            <th>总净重(KG)<br><span style="font-weight:400;font-size:11px">น้ำหนักรวม</span></th>
+            <th>出厂单件成本(¥)<br><span style="font-weight:400;font-size:11px">ต้นทุนโรงงาน/กล่อง</span></th>
+            <th>出厂净果价(¥/KG)<br><span style="font-weight:400;font-size:11px">ราคาโรงงาน/กก.</span></th>
+            <th>国内实际净重(KG)<br><span style="font-weight:400;font-size:11px">น้ำหนักจริงในจีน</span></th>
+            <th>实际净果价(¥/KG)<br><span style="font-weight:400;font-size:11px">ราคาจริง/กก.</span></th>
+            <th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="gradeBody"></tbody>
+        <tfoot>
+          <tr class="summary">
+            <td>合计 / รวม</td>
+            <td id="sumQty" style="text-align:center">0</td>
+            <td>—</td>
+            <td>—</td>
+            <td id="sumWeight" style="text-align:center">0</td>
+            <td id="sumTotalCost" style="text-align:center">¥0</td>
+            <td id="sumAvgFruitPrice" style="text-align:center">¥0</td>
+            <td id="sumActualWeight" style="text-align:center">0</td>
+            <td id="sumActualFruitPrice" style="text-align:center">¥0</td>
+            <td class="no-print"></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div style="margin-top:12px;text-align:center" class="no-print">
+        <button class="btn btn-primary btn-sm" onclick="addGrade()">＋ 添加级别 / เพิ่มเกรด</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Fee Details -->
+  <div class="card">
+    <div class="card-title">💰 费用明细 / รายละเอียดค่าใช้จ่าย</div>
+    <div class="card-body" style="padding:12px">
+
+      <!-- Thailand Fees -->
+      <div class="fee-section">
+        <div class="fee-section-header" onclick="toggleSection(this)">
+          <span class="arrow">▼</span> 🇹🇭 泰国费用 / ค่าใช้จ่ายในไทย（泰铢 THB）
+        </div>
+        <div class="fee-section-body">
+          <table id="thFeeTable">
+            <thead>
+              <tr><th>费用项目 / รายการ</th><th>单价(฿)<br><span style="font-weight:400;font-size:10px">อัตราค่าบริการ</span></th><th>金额(฿)</th><th>折合(¥)</th><th class="no-print"></th></tr>
+            </thead>
+            <tbody id="thFeeBody"></tbody>
+            <tfoot>
+              <tr class="summary"><td>泰国费用小计 / รวมค่าใช้จ่ายไทย</td><td></td><td id="thSumTHB" style="text-align:center">฿0</td><td id="thSumCNY" style="text-align:center">¥0</td><td class="no-print"></td></tr>
+            </tfoot>
+          </table>
+          <div style="margin-top:8px;text-align:center" class="no-print">
+            <button class="btn btn-primary btn-sm" onclick="addFee('th')">＋ 添加 / เพิ่ม</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- China Fees -->
+      <div class="fee-section" style="margin-top:16px">
+        <div class="fee-section-header" onclick="toggleSection(this)">
+          <span class="arrow">▼</span> 🇨🇳 中国费用 / ค่าใช้จ่ายในจีน（人民币 CNY）
+        </div>
+        <div class="fee-section-body">
+          <table id="cnFeeTable">
+            <thead>
+              <tr><th>费用项目 / รายการ</th><th>金额(¥)</th><th class="no-print"></th></tr>
+            </thead>
+            <tbody id="cnFeeBody"></tbody>
+            <tfoot>
+              <tr class="summary"><td>中国费用小计 / รวมค่าใช้จ่ายจีน</td><td id="cnSumCNY" style="text-align:center">¥0</td><td class="no-print"></td></tr>
+            </tfoot>
+          </table>
+          <div style="margin-top:8px;text-align:center" class="no-print">
+            <button class="btn btn-primary btn-sm" onclick="addFee('cn')">＋ 添加 / เพิ่ม</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grand Total -->
+      <div style="background:var(--primary);color:#fff;padding:16px;border-radius:var(--radius);margin-top:16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:14px;opacity:.9">费用总计 / ค่าใช้จ่ายรวมทั้งหมด</div>
+          <div style="font-size:13px;opacity:.75" id="feeBreakdown">泰国 ¥0 + 中国 ¥0 = ¥0</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;opacity:.8">每公斤摊销 / ค่าใช้จ่ายต่อกก.</div>
+          <div style="font-size:28px;font-weight:700" id="perKgFee">¥0.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Bar -->
+<div class="action-bar no-print">
+  <button class="btn btn-primary" onclick="window.print()">🖨️ 打印 / พิมพ์</button>
+  <button class="btn btn-accent" onclick="exportCSV()">📊 导出 CSV / ส่งออก CSV</button>
+  <button class="btn btn-danger" onclick="resetAll()">🔄 重置为默认 / รีเซ็ต</button>
+</div>
+
+<script>
+// ============ Default Data ============
+const DEFAULT_GRADES = [
+  { name:'榴莲AB果 / ทุเรียนAB', qty:0, wt:0, price:0, actualWt:0 },
+  { name:'榴莲C果 / ทุเรียนC', qty:0, wt:0, price:0, actualWt:0 },
+  { name:'榴莲D果 / ทุเรียนD', qty:0, wt:0, price:0, actualWt:0 }
+];
+
+const DEFAULT_TH_FEES = [
+  { name:'打包费 / ค่าบรรจุหีบห่อ', unitPrice:0, calcType:'weight' },
+  { name:'代办费 / ค่าธรรมเนียมตัวแทน', unitPrice:0, calcType:'weight' },
+  { name:'农业部检测样果 / ค่าตรวจสอบกรมเกษตร', amount:0 },
+  { name:'开果验肉 / ค่าเปิดผลตรวจเนื้อ', amount:0 },
+  { name:'失水 / ค่าน้ำหนักสูญเสีย', amount:0, calcType:'shrinkage' },
+  { name:'纸箱费用 / ค่ากล่องกระดาษ', unitPrice:0, calcType:'qty' },
+  { name:'DU税费 / ค่าภาษีDU', amount:5000 },
+  { name:'检测费用 / ค่าตรวจสอบ', amount:7000 },
+  { name:'果标 / ค่าป้ายผลไม้', amount:0 },
+  { name:'泰国段运费 / ค่าขนส่งไทย', amount:0 }
+];
+
+const DEFAULT_CN_FEES = [
+  { name:'清关费 / ค่าศุลกากร', amount:0 },
+  { name:'中国段运费 / ค่าขนส่งจีน', amount:0 },
+  { name:'增值税 / ภาษีมูลค่าเพิ่ม', amount:0 },
+  { name:'服务费（暂估）/ ค่าบริการ(ประมาณการ)', amount:0 }
+];
+
+let grades = JSON.parse(JSON.stringify(DEFAULT_GRADES));
+let thFees = JSON.parse(JSON.stringify(DEFAULT_TH_FEES));
+let cnFees = JSON.parse(JSON.stringify(DEFAULT_CN_FEES));
+
+// ============ Render Functions ============
+function renderGrades() {
+  const tbody = document.getElementById('gradeBody');
+  tbody.innerHTML = '';
+  grades.forEach((g, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="t-input name" value="${esc(g.name)}" onchange="grades[${i}].name=this.value"></td>
+      <td><input class="t-input qty" type="number" value="${g.qty}" min="0" onchange="grades[${i}].qty=+this.value;calc()"></td>
+      <td><input class="t-input wt" type="number" value="${g.wt}" min="0" step="0.5" onchange="grades[${i}].wt=+this.value;calc()"></td>
+      <td><input class="t-input price" type="number" value="${g.price}" min="0" onchange="grades[${i}].price=+this.value;calc()"></td>
+      <td class="grade-weight" style="text-align:center;font-weight:600">0</td>
+      <td class="cost-display grade-cost">¥0</td>
+      <td class="grade-fruit-price" style="text-align:center;font-weight:600;font-size:13px;color:var(--accent)">¥0</td>
+      <td><input class="t-input actual-wt" type="number" value="${g.actualWt || 0}" min="0" step="0.5" onchange="grades[${i}].actualWt=+this.value;calc()"></td>
+      <td class="grade-actual-fruit-price" style="text-align:center;font-weight:600;font-size:13px;color:var(--primary)">¥0</td>
+      <td class="no-print" style="text-align:center">
+        <button class="btn btn-danger btn-sm" onclick="removeGrade(${i})" title="删除 / ลบ">✕</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  calc();
+}
+
+function renderFees(type) {
+  const isTh = type === 'th';
+  const fees = isTh ? thFees : cnFees;
+  const tbodyId = isTh ? 'thFeeBody' : 'cnFeeBody';
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = '';
+  fees.forEach((f, i) => {
+    const tr = document.createElement('tr');
+    if (isTh) {
+      const unitPrice = f.unitPrice !== undefined ? f.unitPrice : 0;
+      const calcType = f.calcType || 'manual';
+      const showUnitPrice = calcType !== 'manual';
+      const isShrinkage = f.name.includes('失水');
+      const shrinkageTip = `失水 = 收果价总额฿ ÷ (1-0.05) × 0.05`;
+      const nameCell = isShrinkage
+        ? `<span style="display:flex;align-items:center;gap:4px">
+            <input class="t-input" style="width:150px;text-align:left" value="${esc(f.name)}" onchange="${type}Fees[${i}].name=this.value">
+            <span style="cursor:help;color:var(--accent);font-size:16px;font-weight:bold" title="${shrinkageTip}">!</span>
+           </span>`
+        : `<input class="t-input" style="width:180px;text-align:left" value="${esc(f.name)}" onchange="${type}Fees[${i}].name=this.value">`;
+      tr.innerHTML = `
+        <td>${nameCell}</td>
+        <td><input class="t-input" style="width:80px" type="number" value="${unitPrice}" min="0" step="0.1" ${showUnitPrice ? `onchange="${type}Fees[${i}].unitPrice=+this.value;calc()"` : 'readonly style="background:#E0E0E0"'}></td>
+        <td><input class="t-input fee" type="number" value="${f.amount || 0}" min="0" step="0.1" ${calcType === 'manual' ? `onchange="${type}Fees[${i}].amount=+this.value;calc()"` : 'readonly style="background:#E0E0E0"'}></td>
+        <td class="th-fee-cny" style="text-align:center;color:var(--text-light)">¥0</td>
+        <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm" onclick="removeFee('${type}',${i})">✕</button></td>
+      `;
+    } else {
+      const isAutoVat = cnFees[i] && cnFees[i].isAutoVat;
+      const vatHelpTip = `增值税 = (收果价总额฿ + 泰国费用小计฿) ÷ 汇率 × 9%`;
+      const nameCell = f.name.includes('增值税') 
+        ? `<span style="display:flex;align-items:center;gap:4px">
+            <input class="t-input" style="width:160px;text-align:left" value="${esc(f.name)}" onchange="${type}Fees[${i}].name=this.value">
+            <span style="cursor:help;color:var(--accent);font-size:16px;font-weight:bold" title="${vatHelpTip}">!</span>
+           </span>`
+        : `<input class="t-input" style="width:200px;text-align:left" value="${esc(f.name)}" onchange="${type}Fees[${i}].name=this.value">`;
+      tr.innerHTML = `
+        <td>${nameCell}</td>
+        <td><input class="t-input fee" type="number" value="${f.amount || 0}" min="0" step="0.1" ${isAutoVat ? 'readonly style="background:#E0E0E0"' : `onchange="${type}Fees[${i}].amount=+this.value;calc()"`}></td>
+        <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm" onclick="removeFee('${type}',${i})">✕</button></td>
+      `;
+    }
+    tbody.appendChild(tr);
+  });
+  calc();
+}
+
+// ============ Calculation Engine ============
+function calc() {
+  const rate = parseFloat(document.getElementById('exchangeRate').value) || 1;
+
+  // Total weight and quantity
+  let totalWeight = grades.reduce((s, g) => s + g.qty * g.wt, 0);
+  let sumQty = grades.reduce((s, g) => s + g.qty, 0);
+
+  // Calculate 收果价总额 (泰铢) for VAT formula
+  let fruitPriceTotalTHB = grades.reduce((s, g) => s + g.qty * g.wt * g.price, 0);
+
+  // Thailand fees: auto-calculate based on calcType
+  thFees.forEach((f, i) => {
+    if (f.calcType === 'weight') {
+      f.amount = totalWeight * (f.unitPrice || 0);
+    } else if (f.calcType === 'qty') {
+      f.amount = sumQty * (f.unitPrice || 0);
+    } else if (f.calcType === 'shrinkage') {
+      // 失水 = 收果价总额฿ ÷ (1-0.05) × 0.05
+      f.amount = fruitPriceTotalTHB / (1 - 0.05) * 0.05;
+    }
+    // Update amount input field (auto-calc fees are readonly but need display update)
+    const rows = document.querySelectorAll('#thFeeBody tr');
+    if (rows[i]) {
+      const amtInput = rows[i].querySelector('.fee');
+      if (amtInput) {
+        amtInput.value = (f.amount || 0).toFixed(2);
+      }
+    }
+  });
+
+  const thTotalTHB = thFees.reduce((s, f) => s + (f.amount || 0), 0);
+  const thTotalCNY = thTotalTHB / rate;
+
+  // China fees: auto-calculate VAT
+  const vatIndex = cnFees.findIndex(f => f.name.includes('增值税'));
+  if (vatIndex >= 0) {
+    // 增值税 = (收果价总额泰铢 + 泰国费用小计泰铢) ÷ 汇率 × 0.09
+    cnFees[vatIndex].amount = (fruitPriceTotalTHB + thTotalTHB) / rate * 0.09;
+    cnFees[vatIndex].isAutoVat = true;
+    // Update VAT input field
+    const rows = document.querySelectorAll('#cnFeeBody tr');
+    if (rows[vatIndex]) {
+      const amtInput = rows[vatIndex].querySelector('.fee');
+      if (amtInput) {
+        amtInput.value = cnFees[vatIndex].amount.toFixed(2);
+      }
+    }
+  }
+
+  const cnTotalCNY = cnFees.reduce((s, f) => s + (f.amount || 0), 0);
+
+  // Grand total
+  const grandTotalCNY = thTotalCNY + cnTotalCNY;
+  const perKgFee = totalWeight > 0 ? grandTotalCNY / totalWeight : 0;
+
+  // Update TH fee rows
+  document.querySelectorAll('#thFeeBody tr').forEach((tr, i) => {
+    if (thFees[i]) {
+      const cnyEl = tr.querySelector('.th-fee-cny');
+      if (cnyEl) cnyEl.textContent = '¥' + fmt((thFees[i].amount || 0) / rate);
+    }
+  });
+  document.getElementById('thSumTHB').textContent = '฿' + fmt(thTotalTHB);
+  document.getElementById('thSumCNY').textContent = '¥' + fmt(thTotalCNY);
+
+  // Update CN fee rows
+  document.getElementById('cnSumCNY').textContent = '¥' + fmt(cnTotalCNY);
+
+  // Summary
+  document.getElementById('feeBreakdown').textContent = `泰国 ¥${fmt(thTotalCNY)} + 中国 ¥${fmt(cnTotalCNY)} = ¥${fmt(grandTotalCNY)}`;
+  document.getElementById('perKgFee').textContent = '¥' + fmt(perKgFee);
+
+  // Grade rows
+  const gradeRows = document.querySelectorAll('#gradeBody tr');
+  let sumCost = 0;
+  let sumActualWeight = 0;
+  grades.forEach((g, i) => {
+    const weight = g.qty * g.wt;
+    const totalCostTHB = weight * g.price;
+    const totalCostCNY = totalCostTHB / rate;
+    const unitCostTH = g.qty > 0 ? totalCostCNY / g.qty : 0;
+    const unitFee = perKgFee * g.wt;
+    const finalCost = unitFee + unitCostTH;
+
+    const row = gradeRows[i];
+    if (!row) return;
+    row.querySelector('.grade-weight').textContent = fmt(weight, 1);
+    const costEl = row.querySelector('.grade-cost');
+    costEl.textContent = '¥' + fmt(finalCost);
+    // Color: high cost = red, low = green
+    const ratio = finalCost / 700;
+    if (ratio > 0.85) costEl.style.color = 'var(--danger)';
+    else if (ratio > 0.6) costEl.style.color = 'var(--accent)';
+    else costEl.style.color = 'var(--primary)';
+
+    // 出厂净果价 = 出厂单件成本 / 单件净重
+    const fruitPrice = g.wt > 0 ? finalCost / g.wt : 0;
+    const fruitEl = row.querySelector('.grade-fruit-price');
+    if (fruitEl) fruitEl.textContent = '¥' + fmt(fruitPrice);
+
+    // 实际净果价 = 出厂单件成本 / 国内实际净重
+    const actualFruitPrice = g.actualWt > 0 ? finalCost / g.actualWt : 0;
+    const actualFruitEl = row.querySelector('.grade-actual-fruit-price');
+    if (actualFruitEl) actualFruitEl.textContent = '¥' + fmt(actualFruitPrice);
+
+    sumCost += g.qty * finalCost;
+    sumActualWeight += g.qty * (g.actualWt || 0);
+  });
+
+  document.getElementById('sumQty').textContent = sumQty;
+  document.getElementById('sumWeight').textContent = fmt(totalWeight, 1);
+  document.getElementById('sumTotalCost').textContent = '¥' + fmt(sumCost);
+  // 出厂净果价加权平均 = 总成本 / 总净重
+  const avgFruitPrice = totalWeight > 0 ? sumCost / totalWeight : 0;
+  // 实际净果价加权平均 = 总成本 / 国内实际净重合计
+  const avgActualFruitPrice = sumActualWeight > 0 ? sumCost / sumActualWeight : 0;
+  document.getElementById('sumActualWeight').textContent = fmt(sumActualWeight, 1);
+  document.getElementById('sumActualFruitPrice').textContent = '¥' + fmt(avgActualFruitPrice);
+  const sumAvgEl = document.getElementById('sumAvgFruitPrice');
+  if (sumAvgEl) sumAvgEl.textContent = '¥' + fmt(avgFruitPrice);
+}
+
+// ============ CRUD ============
+function addGrade() {
+  grades.push({ name:'新级别 / เกรดใหม่', qty:0, wt:10, price:100, actualWt:0 });
+  renderGrades();
+}
+
+function removeGrade(i) {
+  if (grades.length <= 1) return alert('至少保留一个级别 / ต้องมีอย่างน้อย 1 เกรด');
+  grades.splice(i, 1);
+  renderGrades();
+}
+
+function addFee(type) {
+  const fees = type === 'th' ? thFees : cnFees;
+  const cur = type === 'th' ? 'th' : 'cn';
+  fees.push({ name:'新项目 / รายการใหม่', amount:0 });
+  renderFees(type);
+}
+
+function removeFee(type, i) {
+  const fees = type === 'th' ? thFees : cnFees;
+  fees.splice(i, 1);
+  renderFees(type);
+}
+
+function resetAll() {
+  if (!confirm('确认重置所有数据为默认值？\nยืนยันการรีเซ็ตข้อมูลทั้งหมด?')) return;
+  grades = JSON.parse(JSON.stringify(DEFAULT_GRADES));
+  thFees = JSON.parse(JSON.stringify(DEFAULT_TH_FEES));
+  cnFees = JSON.parse(JSON.stringify(DEFAULT_CN_FEES));
+  document.getElementById('exchangeRate').value = 0;
+  renderGrades();
+  renderFees('th');
+  renderFees('cn');
+}
+
+function toggleSection(el) {
+  el.classList.toggle('collapsed');
+  const body = el.nextElementSibling;
+  body.classList.toggle('collapsed');
+}
+
+// ============ Export CSV ============
+function exportCSV() {
+  const rate = parseFloat(document.getElementById('exchangeRate').value) || 1;
+  const totalWeight = grades.reduce((s, g) => s + g.qty * g.wt, 0);
+  const thTotalCNY = thFees.reduce((s, f) => s + f.amount, 0) / rate;
+  const cnTotalCNY = cnFees.reduce((s, f) => s + f.amount, 0);
+  const perKgFee = totalWeight > 0 ? (thTotalCNY + cnTotalCNY) / totalWeight : 0;
+
+  let csv = '\uFEFF';
+  csv += '榴莲成本核算表 / ตารางคำนวณต้นทุนทุเรียน\n';
+  csv += `汇率/อัตราแลกเปลี่ยน,${rate}\n`;
+  csv += `每公斤费用摊销/ค่าใช้จ่ายต่อกก.,${perKgFee.toFixed(4)}\n\n`;
+
+  csv += '级别/เกรด,件数/จำนวน,单件净重(KG)/น้ำหนักสุทธิ,收果价(฿)/ราคารับ,总净重(KG)/น้ำหนักรวม,泰国单件成本(¥),单件费用(¥),最终单件成本(¥)/ต้นทุนสุดท้าย,最终净果价(¥/KG)/ราคาสุทธิ\n';
+
+  grades.forEach(g => {
+    const weight = g.qty * g.wt;
+    const thUnitCost = g.qty > 0 ? (weight * g.price / rate) / g.qty : 0;
+    const unitFee = perKgFee * g.wt;
+    const finalCost = unitFee + thUnitCost;
+    const fruitPrice = g.wt > 0 ? finalCost / g.wt : 0;
+    csv += `${g.name},${g.qty},${g.wt},${g.price},${fmt(weight,1)},${thUnitCost.toFixed(2)},${unitFee.toFixed(2)},${finalCost.toFixed(2)},${fruitPrice.toFixed(2)}\n`;
+  });
+
+  csv += `\n泰国费用/ค่าใช้จ่ายไทย,金额(฿),折合(¥)\n`;
+  thFees.forEach(f => {
+    csv += `${f.name},${f.amount},${(f.amount/rate).toFixed(2)}\n`;
+  });
+  csv += `小计/รวม,${thFees.reduce((s,f)=>s+f.amount,0)},${thTotalCNY.toFixed(2)}\n`;
+
+  csv += `\n中国费用/ค่าใช้จ่ายจีน,金额(¥)\n`;
+  cnFees.forEach(f => {
+    csv += `${f.name},${f.amount}\n`;
+  });
+  csv += `小计/รวม,,${cnTotalCNY.toFixed(2)}\n`;
+  csv += `总计/รวมทั้งหมด,,,${(thTotalCNY+cnTotalCNY).toFixed(2)}\n`;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '榴莲成本核算_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============ Helpers ============
+function fmt(n, d=2) { return Number(n).toLocaleString('zh-CN', {minimumFractionDigits:d, maximumFractionDigits:d}); }
+function esc(s) { return s.replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ============ Init ============
+renderGrades();
+renderFees('th');
+renderFees('cn');
+</script>
+</body>
+</html>
