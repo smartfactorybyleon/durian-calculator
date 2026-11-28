@@ -25,9 +25,9 @@
   };
 
   var CSS = [
-    '.wz-mask{position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:9998;display:none}',
+    '.wz-mask{position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:2147482999;display:none}',
     '.wz-mask.on{display:block}',
-    '.wz-pop{position:fixed;z-index:9999;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.28);width:340px;max-width:calc(100vw - 24px);padding:14px;display:none}',
+    '.wz-pop{position:fixed;z-index:2147483000;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.28);width:340px;max-width:calc(100vw - 24px);padding:14px;display:none}',
     '.wz-pop.on{display:block}',
     '.wz-pop h4{margin:0 0 2px;font-size:15px;color:#1B5E20}',
     '.wz-pop .wz-sub{font-size:12px;color:#9E9E9E;margin-bottom:10px}',
@@ -190,6 +190,11 @@
   function boot() {
     injectStyle();
     bind();
+    // 诊断：初始状态就显示一个弹窗，确认渲染与层级正常
+    if (window.WIZ_DEBUG) setTimeout(function () {
+      var t = document.querySelector('#gradeBody input.qty') || document.querySelector('#exchangeRate');
+      if (t) open(t);
+    }, 1200);
     tip();
     // 表格增删行后会重建，重新绑定
     setInterval(bind, 1500);
