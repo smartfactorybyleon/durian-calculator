@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>龙眼出口行情 · 泰国→中国</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#1B5E20;--primary-light:#4CAF50;--primary-lighter:#E8F5E9;--primary-lightest:#F1F8E9;--accent:#FF6F00;--danger:#C62828;--text:#212121;--text-light:#616161;--text-lighter:#9E9E9E;--border:#C8E6C9;--bg:#F5F5F5;--white:#FFF;--shadow:0 2px 8px rgba(0,0,0,.08);--radius:10px;--radius-sm:6px}
+body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:20px;font-size:14px}
+.header{background:linear-gradient(135deg,#00695C 0%,#26A69A 100%);color:#fff;padding:28px 32px;border-radius:var(--radius);margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.header h1{font-size:26px;font-weight:700}.header h1 span{font-size:15px;font-weight:400;opacity:.88;display:block;margin-top:2px}
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px}
+.head{background:#E0F2F1;padding:14px 20px;border-bottom:2px solid #B2DFDB;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.head h2{font-size:16px;color:#00695C}.head .sub{font-size:12px;color:var(--text-light)}
+.body{padding:16px 20px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:#E0F2F1;border-radius:var(--radius-sm);padding:10px 12px}
+.kpi .l{font-size:12px;color:var(--text-light)}.kpi .v{font-size:20px;font-weight:700;color:#00695C}.kpi .d{font-size:11px;color:var(--text-lighter)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--text-light);margin-bottom:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+svg{display:block;width:100%;height:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:5px 6px;border-bottom:1px solid #eee;text-align:right;white-space:nowrap}
+th{background:#E0F2F1;color:#00695C}
+th:first-child,td:first-child{text-align:left}
+.note{font-size:12px;color:#8a6d3b;background:#FFF8E1;border-radius:8px;padding:8px 10px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="header"><h1>🍈 龙眼出口行情<span>泰国鲜龙眼（ลำไย）出口中国 · 按周报送（7天一期）</span></h1></div>
+
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+  <a href="./" style="padding:8px 16px;border-radius:20px;background:#fff;color:var(--primary);text-decoration:none;font-size:13px;font-weight:700;border:1px solid var(--border)">🧮 成本核算器</a>
+  <a href="./market.html" style="padding:8px 16px;border-radius:20px;background:#fff;color:#00695C;text-decoration:none;font-size:13px;font-weight:700;border:1px solid #B2DFDB">📈 榴莲出口</a>
+  <a href="./domestic.html" style="padding:8px 16px;border-radius:20px;background:#fff;color:var(--primary);text-decoration:none;font-size:13px;font-weight:700;border:1px solid var(--border)">🏬 国内行情</a>
+  <a href="./longan.html" style="padding:8px 16px;border-radius:20px;background:#00695C;color:#fff;text-decoration:none;font-size:13px;font-weight:700">🍈 龙眼行情</a>
+</div>
+
+<div class="card">
+  <div class="head"><h2>一、最近三周出口</h2><div class="sub" id="lgAsOf">—</div></div>
+  <div class="body">
+    <div class="kpis">
+      <div class="kpi"><div class="l">最新周吨数</div><div class="v" id="kT">—</div><div class="d" id="kTD"></div></div>
+      <div class="kpi"><div class="l">最新周金额</div><div class="v" id="kV">—</div><div class="d">百万泰铢</div></div>
+      <div class="kpi"><div class="l">折算单价</div><div class="v" id="kP">—</div><div class="d">铢/公斤</div></div>
+      <div class="kpi"><div class="l">本季累计</div><div class="v" id="kCum">—</div><div class="d">吨（1月至今）</div></div>
+    </div>
+    <div class="legend"><span><i style="background:#4CAF50"></i>吨数</span><span><i style="background:#FF6F00"></i>百万泰铢</span></div>
+    <svg id="chartWeek" viewBox="0 0 900 250"></svg>
+    <div class="note">本季累计：11/23 已达 293,045 吨、12,635 百万铢。2025 年前 10 个月泰国向中国出口龙眼约 26.1 万吨（11/2 数据），11 月三周再增约 3.2 万吨。</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="head"><h2>二、周报明细</h2><div class="sub">单位：车次/吨/百万铢</div></div>
+  <div class="body"><table id="tWeek"></table></div>
+</div>
+
+<div class="card">
+  <div class="head"><h2>三、11/23 周 出口点分布</h2><div class="sub">按泰国出口口岸汇总（东部 294 车 / 北部 71 车）</div></div>
+  <div class="body"><svg id="chartPort" viewBox="0 0 900 240"></svg><table id="tPort" style="margin-top:10px"></table></div>
+</div>
+
+<div class="card">
+  <div class="head"><h2>四、主要出口路线（11/23 周）</h2><div class="sub">数量 / 吨 / 百万铢</div></div>
+  <div class="body"><table id="tRoute"></table><div class="note">CK 清孔经磨憨（泰老中铁路）是绝对主力；海运经林查班走厦门、上海、青岛。</div></div>
+</div>
+
+<div class="note" style="background:#fff;box-shadow:var(--shadow)">数据来源：泰国农业部 doa.go.th（ลำไย 鲜龙眼出口中国统计，图片版，按周报送）。与榴莲不同，龙眼是 7 天一报，不是每日。</div>
+
+<script>
+const L = {"source":"泰国农业部 doa.go.th（ลำไย 鲜龙眼出口中国统计）","note":"龙眼按周（7天）报送，不是每日","reports":[{"label":"11/2","range":"2025-10-27 ~ 2025-11-02","shipments":317,"tonnes":7818.03,"million_baht":329.09,"cum":{"days":"since 2025-01-01","shipments":10490,"tonnes":261302.83,"million_baht":11305.56},"baht_per_kg":0.0421},{"label":"11/16","range":"2025-11-10 ~ 2025-11-16","shipments":419,"tonnes":10371.51,"million_baht":450.89,"cum":{"days":"since 2025-01-01","shipments":11401,"tonnes":283929.7,"million_baht":12254.41},"baht_per_kg":0.0435},{"label":"11/23","range":"2025-11-17 ~ 2025-11-23","shipments":365,"tonnes":9115.65,"million_baht":380.85,"cum":{"days":"since 2025-01-01","shipments":11766,"tonnes":293045.35,"million_baht":12635.26},"baht_per_kg":0.0418}],"routes":[{"port":"NP 那空拍侬","dest":"天保","n":2,"t":44.84,"v":5.4},{"port":"NP 那空拍侬","dest":"河口","n":5,"t":123.39,"v":9.87},{"port":"CK 清孔","dest":"磨憨","n":186,"t":4656.73,"v":190.99},{"port":"CK 清孔","dest":"云南","n":59,"t":1488.81,"v":61.84},{"port":"NK 廊开","dest":"磨憨","n":10,"t":259.31,"v":12.42},{"port":"NK 廊开","dest":"磨憨(铁运)","n":7,"t":179.1,"v":14.53},{"port":"NK 廊开","dest":"磨憨铁路","n":9,"t":222.53,"v":0.22},{"port":"CS 清盛","dest":"西双版纳","n":23,"t":587.32,"v":25.66},{"port":"CS 清盛","dest":"西双版纳","n":2,"t":50.28,"v":1.5},{"port":"LK 拉甲邦","dest":"厦门","n":13,"t":346.1,"v":9.89},{"port":"LK 拉甲邦","dest":"大铲湾","n":1,"t":25.3,"v":0.74},{"port":"LK 拉甲邦","dest":"成都","n":1,"t":25.8,"v":0.89},{"port":"LB 林查班","dest":"厦门","n":14,"t":361.48,"v":15.17},{"port":"LB 林查班","dest":"上海","n":14,"t":368.15,"v":16.6},{"port":"LB 林查班","dest":"青岛","n":4,"t":110.4,"v":4.9},{"port":"LB 林查班","dest":"宁波","n":1,"t":27.0,"v":1.0},{"port":"LB 林查班","dest":"其他","n":6,"t":157.57,"v":6.55},{"port":"BA 素万那普","dest":"成都","n":5,"t":30.78,"v":1.56},{"port":"BA 素万那普","dest":"广州","n":1,"t":0.37,"v":0.03}],"total_1123":{"n":365,"t":9115.65,"v":380.85,"by_region":{"东部":{"n":294,"t":7321.26,"v":300.99},"北部":{"n":71,"t":1794.39,"v":79.86}}},"ports_1123":[{"port":"NP 那空拍侬","n":7,"t":168.23,"v":15.27},{"port":"CK 清孔","n":245,"t":6145.54,"v":252.83},{"port":"NK 廊开","n":26,"t":660.94,"v":27.17},{"port":"CS 清盛","n":25,"t":637.6,"v":27.16},{"port":"LK 拉甲邦","n":15,"t":397.2,"v":11.52},{"port":"LB 林查班","n":39,"t":1024.6,"v":44.22},{"port":"BA 素万那普","n":6,"t":31.15,"v":1.59}]};
+function f(n,d){return Number(n).toLocaleString('zh-CN',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+function path(p){return p.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');}
+
+function kpis(){
+  const r=L.reports, last=r[r.length-1], prev=r[r.length-2];
+  document.getElementById('lgAsOf').textContent='最新一期 '+last.range;
+  document.getElementById('kT').textContent=f(last.tonnes,0);
+  const d=(last.tonnes-prev.tonnes)/prev.tonnes*100;
+  document.getElementById('kTD').textContent=(d>=0?'↑ +':'↓ ')+d.toFixed(1)+'% 周环比';
+  document.getElementById('kV').textContent=f(last.million_baht,2);
+  document.getElementById('kP').textContent=last.baht_per_kg.toFixed(3);
+  document.getElementById('kCum').textContent=f(last.cum.tonnes,0);
+}
+function chartWeek(){
+  const r=L.reports, W=900,H=250,L0=60,R=20,T=16,B=40,iw=W-L0-R,ih=H-T-B;
+  const maxT=Math.max(...r.map(x=>x.tonnes)),maxV=Math.max(...r.map(x=>x.million_baht));
+  const gw=iw/r.length,bw=Math.min(70,gw*0.4);let s='';
+  for(let k=0;k<=4;k++){const y=T+ih*k/4;s+=`<line x1="${L0}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#eee"/><text x="${L0-6}" y="${y+4}" font-size="10" fill="#999" text-anchor="end">${f(maxT*(1-k/4)/1000,0)}k</text><text x="${W-R+6}" y="${y+4}" font-size="10" fill="#FF6F00">${f(maxV*(1-k/4))}</text>`;}
+  r.forEach((x,i)=>{const cx=L0+gw*i+gw/2;
+    s+=`<rect x="${cx-bw/2}" y="${T+ih-ih*x.tonnes/maxT}" width="${bw}" height="${ih*x.tonnes/maxT}" fill="#4CAF50" rx="3"><title>${x.range} ${f(x.tonnes)}吨</title></rect>`;
+    s+=`<text x="${cx}" y="${H-B+16}" font-size="11" fill="#555" text-anchor="middle">${x.label}</text>`;});
+  const vp=r.map((x,i)=>[L0+gw*i+gw/2,T+ih-ih*x.million_baht/maxV]);
+  s+=`<path d="${path(vp)}" fill="none" stroke="#FF6F00" stroke-width="2"/>`;
+  vp.forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#FF6F00"><title>${f(p[0])}</title></circle>`);
+  document.getElementById('chartWeek').innerHTML=s;
+}
+function chartPort(){
+  const rows=L.ports_1123.slice().sort((a,b)=>b.n-a.n), W=900,H=240,L0=60,R=20,T=16,B=40,iw=W-L0-R,ih=H-T-B;
+  const max=Math.max(...rows.map(r=>r.n)), gw=iw/rows.length, bw=Math.min(70,gw*0.6);
+  let s='';
+  for(let k=0;k<=4;k++){const y=T+ih*k/4;s+=`<line x1="${L0}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#eee"/><text x="${L0-6}" y="${y+4}" font-size="10" fill="#999" text-anchor="end">${f(max*(1-k/4))}</text>`;}
+  rows.forEach((r,i)=>{const x=L0+gw*i+(gw-bw)/2;
+    s+=`<rect x="${x}" y="${T+ih-ih*r.n/max}" width="${bw}" height="${ih*r.n/max}" fill="#00897B" rx="2"><title>${r.port} ${r.n}车</title></rect>`;
+    s+=`<text x="${x+bw/2}" y="${H-B+16}" font-size="9" fill="#555" text-anchor="middle">${r.port.split(' ')[0]}</text>`;});
+  document.getElementById('chartPort').innerHTML=s;
+}
+function tables(){
+  const r=L.reports;
+  document.getElementById('tWeek').innerHTML='<tr><th>周期</th><th>车次</th><th>吨数</th><th>百万铢</th><th>铢/公斤</th><th>累计吨</th></tr>'+
+    r.map(x=>`<tr><td>${x.range}</td><td>${f(x.shipments)}</td><td>${f(x.tonnes,2)}</td><td>${f(x.million_baht,2)}</td><td>${x.baht_per_kg.toFixed(3)}</td><td>${f(x.cum.tonnes,0)}</td></tr>`).join('');
+  const p=L.ports_1123.slice().sort((a,b)=>b.n-a.n);
+  const tn=p.reduce((a,x)=>a+x.n,0),tt=p.reduce((a,x)=>a+x.t,0),tv=p.reduce((a,x)=>a+x.v,0);
+  document.getElementById('tPort').innerHTML='<tr><th>出口点</th><th>车次</th><th>吨数</th><th>百万铢</th></tr>'+
+    p.map(x=>`<tr><td>${x.port}</td><td>${x.n}</td><td>${f(x.t,2)}</td><td>${f(x.v,2)}</td></tr>`).join('')+
+    `<tr><td><b>合计</b></td><td><b>${tn}</b></td><td><b>${f(tt,2)}</b></td><td><b>${f(tv,2)}</b></td></tr>`;
+  const rt=L.routes;
+  document.getElementById('tRoute').innerHTML='<tr><th>出口点</th><th>中国方向</th><th>车次</th><th>吨数</th><th>百万铢</th></tr>'+
+    rt.map(x=>`<tr><td>${x.port}</td><td>${x.dest}</td><td>${x.n}</td><td>${f(x.t,2)}</td><td>${f(x.v,2)}</td></tr>`).join('');
+}
+kpis();chartWeek();chartPort();tables();
+</script>
+</body>
+</html>
