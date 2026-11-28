@@ -27,7 +27,7 @@
   var CSS = [
     '.wz-mask{position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:2147482999;display:none}',
     '.wz-mask.on{display:block}',
-    '.wz-pop{position:fixed;z-index:2147483000;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.28);width:340px;max-width:calc(100vw - 24px);padding:14px;display:none}',
+    '.wz-pop{position:fixed;z-index:2147483000;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.28);width:320px;max-width:calc(100vw - 20px);padding:12px;display:none}',
     '.wz-pop.on{display:block}',
     '.wz-pop h4{margin:0 0 2px;font-size:15px;color:#1B5E20}',
     '.wz-pop .wz-sub{font-size:12px;color:#9E9E9E;margin-bottom:10px}',
@@ -99,7 +99,7 @@
   // 把弹窗贴在输入框下方（空间不够就放上方）
   function place(inp) {
     var r = inp.getBoundingClientRect();
-    var pw = 340, ph = 210;
+    var pw = 320, ph = 200;
     var left = Math.min(Math.max(8, r.left), window.innerWidth - pw - 8);
     var top = r.bottom + 8;
     if (top + ph > window.innerHeight) top = Math.max(8, r.top - ph - 8);
